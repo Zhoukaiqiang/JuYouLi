@@ -50,7 +50,10 @@ Route::any("st_recharge", "admin/index/setRecharge");
 
 Route::any("order", "goods/goods/orderList");
 
+Route::get("order_d", "goods/goods/orderDetail");
+
 Route::any("goods", "goods/goods/goodsList");
+
 
 Route::post("add_goods", "goods/goods/addGoods");
 

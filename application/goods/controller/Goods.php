@@ -60,7 +60,27 @@ class Goods extends Common
     public function orderList(Request $request)
     {
         if ($request->isGet()) {
-            if ($request->get("send")) {
+            $send = $request->get("send");
+            $ky = $request->get("ky");
+            $time = $request->get("time");
+
+            if ($ky) {
+                $ky_f = "LIKE";
+                $ky = $ky . "%";
+            } else {
+                $ky_f = "NOT LIKE";
+                $ky = '-2';
+            }
+            if ($time) {
+                $night = strtotime(date("Y-m-d 23:59:59", $time));
+                $time = [(int)$time, $night];
+                $time_f = "between";
+            } else {
+                $time_f = ">";
+                $time = -2;
+            }
+            /** 发货操作 */
+            if ($send) {
                 $where = [
                     ["status", "eq", 1]
                 ];
@@ -69,11 +89,13 @@ class Goods extends Common
                     ["status", "neq", 0]
                 ];
             }
+            $where[] = ["agent_name|c_phone|c_person", $ky_f, $ky];
+            $where[] = ["ctime", $time_f, $time];
             $rows = Db::name("order")->where($where)->count("id");
             $pages = page($rows);
             $res["list"] = Db::name("order")->where($where)->limit($pages['offset'], $pages["limit"])->select();
             $res["page"] = $pages;
-            check_data($res);
+            check_data($res["list"], $res);
         } else {
             $id = $request->post("id");
             $status = $request->post("status");
@@ -87,6 +109,51 @@ class Goods extends Common
             check_opera($res);
         }
 
+    }
+
+    /**
+     * 订单详情
+     * @param Request $request
+     * @param [string] $gs 商品id + , + 商品id
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function orderDetail(Request $request)
+    {
+        if ($request->isGet()) {
+            $str = $request->get("gs");
+            $arr = explode(',', $str);
+
+            $where = [
+                'gid' => 0,
+                "id" => $arr,
+            ];
+            $main_id = Db::name("goods")->where($where)->field("id")->select();
+
+            $res = Db::name("goods")->where($where)->select();
+            foreach ($main_id as &$v) {
+                $v = $v["id"];
+            }
+            $arr = array_diff($arr, $main_id);  //删除指定元素
+
+            foreach ($res as &$v) {
+                foreach ($arr as $i) {
+                    $where2 = [
+                        'gid' => $v["id"],
+                        "id" => $i,
+                    ];
+                    $alias['alias_' . $i] = Db::name("goods")->where($where2)->find();
+                    if(!$alias["alias_".$i]) {
+                        unset($alias["alias_".$i]);
+                    }
+                }
+                $v["alias"] = $alias;
+                $alias = null;
+            }
+
+            halt($res);
+        }
     }
 
     /**
@@ -142,7 +209,8 @@ class Goods extends Common
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    public function searchGoods(Request $request) {
+    public function searchGoods(Request $request)
+    {
         if ($request->isPost()) {
 
             $ky = $request->post("ky");
@@ -152,21 +220,21 @@ class Goods extends Common
             $query['goods_type'] = $request->post("goods_type");  // 1--兑换币  2-- 优惠券
             if ($ky) {
                 $ky_f = "LIKE";
-                $ky = $request->post("ky"). '%';
-            }else {
+                $ky = $request->post("ky") . '%';
+            } else {
                 $ky_f = "NOT LIKE";
                 $ky = -2;
             }
             if ($status) {
                 $status_f = "eq";
-            }else {
+            } else {
                 $status_f = "neq";
                 $status = -2;
             }
             if ($sku) {
                 $sku_f = "<";
                 $sku = (int)$sku;
-            }else {
+            } else {
                 $sku_f = "<>";
                 $sku = -2;
             }
@@ -196,7 +264,6 @@ class Goods extends Common
             check_data($res["list"], $res);
         }
     }
-
 
 
 }

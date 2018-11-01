@@ -28,14 +28,39 @@ class Admin extends Common
         $id = $request->param("id");
         if ($request->isGet()) {
 
+            $ky = $request->get("ky");
+            $status = $request->get("status");
+            $area = $request->get("ads");
+
+            if ($ky) {
+                $ky_f = "LIKE";
+                $ky = $ky . "%";
+            }else {
+                $ky_f = "NOT LIKE";
+                $ky = "-2";
+            }
+            if ($status) {
+                $status_f = "eq";
+            }else {
+                $status_f = "<>";
+                $status = -2;
+            }if ($area) {
+                $area_f = "eq";
+            }else {
+                $area_f = "<>";
+                $area = -2;
+            }
+            $where[] = ["agent_name|c_person|c_phone", $ky_f, $ky];
+            $where[] = ["status", $status_f, $status];
+            $where[] = ["agent_area", $area_f, $area];
             if (!empty($id)) {
                 $res = $Agent::get($id);
                 $res->hidden(["password"]);
                 check_data($res);
             }
-            $rows = $Agent::count("id");
+            $rows = $Agent::where($where)->count("id");
             $pages = page($rows);
-            $res["list"] = $Agent->limit($pages["offset"], $pages["limit"])->select();
+            $res["list"] = $Agent->where($where)->limit($pages["offset"], $pages["limit"])->select();
 
             $res["list"]->hidden(["password"]);
 
@@ -69,15 +94,38 @@ class Admin extends Common
         $Merc = new Merchant();
         if ($request->isGet()) {
             $id = $request->param("id");
-
+            $ky = $request->get("ky");
+            $status = $request->get("status");
+            $area = $request->get("ads");
+            if ($ky) {
+                $ky_f = "LIKE";
+                $ky = $ky . "%";
+            }else {
+                $ky_f = "NOT LIKE";
+                $ky = "-2";
+            }
+            if ($status) {
+                $status_f = "eq";
+            }else {
+                $status_f = "<>";
+                $status = -2;
+            }if ($area) {
+                $area_f = "eq";
+            }else {
+                $area_f = "<>";
+                $area = -2;
+            }
+            $where[] = ["name|contact|phone|agent_name", $ky_f, $ky];
+            $where[] = ["status", $status_f, $status];
+            $where[] = ["ads", $area_f, $area];
             if (!empty($id)) {
                 $res = $Merc::get($id);
                 $res->hidden(["password"]);
                 check_data($res);
             }
-            $rows = $Merc::count("id");
+            $rows = $Merc::where($where)->count("id");
             $pages = page($rows);
-            $res["list"] = $Merc->limit($pages["offset"], $pages["limit"])->select();
+            $res["list"] = $Merc->where($where)->limit($pages["offset"], $pages["limit"])->select();
 
             $res["list"]->hidden(["password"]);
 
@@ -118,7 +166,7 @@ class Admin extends Common
                 $ky_f = "LIKE";
                 $ky = $ky . "%";
             }else {
-                $ky_f = "neq";
+                $ky_f = "NOT LIKE";
                 $ky = "-2";
             }
 
@@ -129,12 +177,18 @@ class Admin extends Common
                 $res->hidden(["password"]);
                 check_data($res);
             }
+
             $rows = $Member::where($where)->count("id");
             $pages = page($rows);
             $res["list"] = $Member->where($where)->limit($pages["offset"], $pages["limit"])->select();
 
             $res["list"]->hidden(["password"]);
             $res["pages"] = $pages;
+            $count = $Member::count("id");
+            $y_count = $Member::where("ctime", "yesterday")->count("id");
+            $t_c = $count - $y_count;
+            $res["m_total"] = [$count, $t_c];
+            $res["m_amp"] = round($t_c / $count * 100 , 2) . '%';
             check_data($res["list"], $res);
         } else {
             /** 会员修改 */
