@@ -89,6 +89,8 @@ class AdminValidate extends Validate{
         'add'=>["agent_name", "c_person", "c_phone", "phone", "name", "password", "bank_name", "bank_branch", "bank_ads", "account", "account_name", "agent_level", "agent_area", "agent_money", "contract_picture"],
         "addGoods" => ["name", "a_price", "m_price", "fee", "SKU", "goods_type", "category","imgLogo"],
         "addAliasGoods" => ["name", "a_price", "m_price", "fee", "SKU", "goods_type", "category","imgLogo", "gid"],
+        //新增商户 mark
+        "add_merc"=>["name", "c_contact", "ads"],
     ];
 
 }

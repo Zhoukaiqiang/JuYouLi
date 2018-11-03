@@ -124,19 +124,16 @@ class Goods extends Common
         if ($request->isGet()) {
             $str = $request->get("gs");
             $arr = explode(',', $str);
-
             $where = [
                 'gid' => 0,
                 "id" => $arr,
             ];
             $main_id = Db::name("goods")->where($where)->field("id")->select();
-
             $res = Db::name("goods")->where($where)->select();
             foreach ($main_id as &$v) {
                 $v = $v["id"];
             }
             $arr = array_diff($arr, $main_id);  //删除指定元素
-
             foreach ($res as &$v) {
                 foreach ($arr as $i) {
                     $where2 = [
@@ -151,8 +148,7 @@ class Goods extends Common
                 $v["alias"] = $alias;
                 $alias = null;
             }
-
-            halt($res);
+            check_data($res);
         }
     }
 

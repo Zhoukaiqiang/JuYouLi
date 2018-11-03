@@ -6,7 +6,7 @@
  * Time: 10:33
  */
 
-namespace app\admin\controller;
+namespace app\agent\controller;
 
 
 use think\Controller;
@@ -17,6 +17,13 @@ use think\Request;
 
 class User extends Controller
 {
+
+    function encrypt_password()
+    {
+        $phone = \request()->param("phone");
+        $password = \request()->param("password");
+        return md5('$YouShop' . md5($password) . $phone);
+    }
 
     /**
      * 用户登录
@@ -30,10 +37,10 @@ class User extends Controller
         $data = request()->post();
         check_params("login", $data);
 
-        check_exists('admin', 'phone', $data['phone'], 1);
+        check_exists('agent', 'c_phone', $data['phone'], 1);
 
-        $db_res = Db::name("admin")->field('id,name,phone,password')
-            ->where('phone', $data['phone'])->find();
+        $db_res = Db::name("agent")->field('id,name,c_phone,password')
+            ->where('c_phone', $data['phone'])->find();
 
         if ($db_res['password'] !== encrypt_password($data['password'], $data["phone"])) {
             return_msg(400, '用户密码不正确！');
@@ -78,13 +85,13 @@ class User extends Controller
         $where['phone'] = $query['phone'];
 
         /* 判断原始密码是否正确 */
-        $db_ini_pwd = Db::name("admin")->where($where)->value("password");
+        $db_ini_pwd = Db::name("agent")->where($where)->value("password");
 
         if ($db_ini_pwd !== encrypt_password($query['ini_pwd'], $query["phone"])) {
             return_msg(400, '旧密码不正确!');
         }
 
-        $res = Db::name('admin')->where($where)->setField('password', encrypt_password($query['password'], $query['phone']));
+        $res = Db::name('agent')->where($where)->setField('password', encrypt_password($query['password'], $query['phone']));
 
         /* 把新的密码存入数据库 */
         if ($res) {

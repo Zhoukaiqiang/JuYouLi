@@ -330,9 +330,9 @@ function check_data($data, $return_data = null, $return = 1)
  * 检查操作是否成功
  * @param $res
  */
-function check_opera($res, $check = 1)
+function check_opera($res, $checkReturn = 1)
 {
-    if ($check) {
+    if ($checkReturn) {
         if ($res) {
             return_msg(200, "success");
         } else {

@@ -61,6 +61,21 @@ Route::post("aa_goods", "goods/goods/addAliasGoods");
 
 Route::post("search_goods", "goods/goods/searchGoods");
 
-return [
+//代理商后台路由
 
-];
+Route::post("a/login", "agent/user/login");
+
+Route::post("a/logout", "agent/user/logout");
+
+Route::get("a/count", "agent/Resource/index");
+
+Route::get("a/charge", "agent/Resource/chargeManage");
+
+Route::post("a/change_pwd", "agent/user/changePwd");
+
+Route::any("a/m_list", 'agent/Resource/mercList');
+
+Route::any("a/o_list", 'agent/Resource/orderList');
+
+Route::any("a/capital", 'agent/Resource/capitalManage');
+
