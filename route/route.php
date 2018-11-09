@@ -79,3 +79,20 @@ Route::any("a/o_list", 'agent/Resource/orderList');
 
 Route::any("a/capital", 'agent/Resource/capitalManage');
 
+Route::any("a/member", 'agent/Resource/memberManage');
+
+Route::any("a/goods", 'agent/Resource/goodsManage');
+
+Route::any("a/m_search", 'agent/Resource/merchantSearch');
+
+Route::any("a/cart", 'agent/Resource/addToCart');
+
+Route::any("a/cat", 'agent/Resource/category');
+
+Route::post("a/opr", 'agent/Resource/cartManage');
+
+Route::get("a/cart_l", 'agent/Resource/cartList');
+
+Route::post("a/num", 'agent/Resource/check_sku');
+
+

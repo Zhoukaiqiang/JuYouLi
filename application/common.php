@@ -294,6 +294,20 @@ if (!function_exists('check_exists')) {
 }
 
 /**
+ * 生成商品编码
+ */
+if( !function_exists("goods_no") ) {
+    function goods_no($factory = "01", $mcc = "13", $goods_id, $sku) {
+        /** 默认变量 */
+        $factory = strval($factory); //厂家号
+        $mcc = strval($mcc);     //大类编码
+        $goods_id = strval($goods_id); // 产品ID
+        $sku = strval($sku);     // 库存
+
+        return ($factory . $mcc . $goods_id . $sku);
+    }
+}
+/**
  * 检验是否有数据，并返回结果
  * @param $data [要检查的数据]
  * @param null $return_data [要返回的数据]
@@ -334,15 +348,15 @@ function check_opera($res, $checkReturn = 1)
 {
     if ($checkReturn) {
         if ($res) {
-            return_msg(200, "success");
+            return_msg(200, "成功");
         } else {
-            return_msg(400, "fail");
+            return_msg(400, "失败");
         }
     } else {
         if ($res) {
             return true;
         } else {
-            return_msg(400, "fail");
+            return_msg(400, "失败");
         }
     }
 

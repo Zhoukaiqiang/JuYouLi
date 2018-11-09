@@ -31,7 +31,10 @@ class Goods extends Common
         }
     }
 
-
+    /**
+     * 添加商品规格
+     * @param Request $request
+     */
     public function addAliasGoods(Request $request)
     {
         if ($request->isPost()) {
@@ -129,12 +132,14 @@ class Goods extends Common
                 "id" => $arr,
             ];
             $main_id = Db::name("goods")->where($where)->field("id")->select();
-            $res = Db::name("goods")->where($where)->select();
+            $rows = Db::name("goods")->where($where)->count("id");
+            $pages = page($rows);
+            $res["list"] = Db::name("goods")->where($where)->limit($pages["offset"], $pages["limit"])->select();
             foreach ($main_id as &$v) {
                 $v = $v["id"];
             }
             $arr = array_diff($arr, $main_id);  //删除指定元素
-            foreach ($res as &$v) {
+            foreach ($res["list"] as &$v) {
                 foreach ($arr as $i) {
                     $where2 = [
                         'gid' => $v["id"],
@@ -148,7 +153,8 @@ class Goods extends Common
                 $v["alias"] = $alias;
                 $alias = null;
             }
-            check_data($res);
+            $res["pages"] = $pages;
+            check_data($res["list"], $res);
         }
     }
 

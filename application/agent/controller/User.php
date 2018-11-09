@@ -18,13 +18,6 @@ use think\Request;
 class User extends Controller
 {
 
-    function encrypt_password()
-    {
-        $phone = \request()->param("phone");
-        $password = \request()->param("password");
-        return md5('$YouShop' . md5($password) . $phone);
-    }
-
     /**
      * 用户登录
      * @param [strin]   phone 用户名（电话）
@@ -36,18 +29,15 @@ class User extends Controller
     {
         $data = request()->post();
         check_params("login", $data);
-
         check_exists('agent', 'c_phone', $data['phone'], 1);
-
         $db_res = Db::name("agent")->field('id,name,c_phone,password')
             ->where('c_phone', $data['phone'])->find();
-
         if ($db_res['password'] !== encrypt_password($data['password'], $data["phone"])) {
             return_msg(400, '用户密码不正确！');
         } else {
             unset($db_res['password']); //密码不返回
             //存储session信息
-            Session::set("user", $db_res);
+            Session::set("user", $db_res,"_backend");
 
             return_msg(200, '登录成功！', $db_res);
         }
@@ -58,8 +48,8 @@ class User extends Controller
      */
     public function logout()
     {
-        Session::clear();
-        if (Session::has("user")) {
+        Session::clear("_backend");
+        if (Session::has("user", "_backend")) {
             return_msg(400, "fail");
         } else {
             return_msg(200, "success");
