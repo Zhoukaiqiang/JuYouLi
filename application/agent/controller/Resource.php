@@ -203,7 +203,6 @@ class Resource extends Common
         } else {
             /** 操作 */
             $id = $request->post("id");
-            $mid = $request->post("mid");
             $status = $request->post("status");
 
             $coin = Db::name("capital")->where("id = $id")->field("coin")->find();
@@ -211,7 +210,7 @@ class Resource extends Common
             if ((int)$status == 2) {
                 Db::name("capital")->where($id)->setField("status", 2);
                 /** 驳回  返回兑换币 */
-                $add = Db::name("merchant")->where("id = $mid")->setInc("coin", $coin['coin']);
+                $add = Db::name("merchant")->where("id", $this->agent_id)->setInc("coin", $coin['coin']);
                 check_opera($add);
             } else {
                 /** 结算 $res */
@@ -365,13 +364,14 @@ class Resource extends Common
         if ($request->isGet()) {
             $ky = $request->get("ky");
             $status = $request->get("status");
-            $time = $request->get("ctime");
+            $time = $request->get("time");
 
             if ($ky) {
                 $k_f = "LIKE";
                 $ky = $ky . "%";
             }else {
                 $k_f = "NOT LIKE";
+                $ky = "-2";
             }
             if ($status) {
                 $s_f = "eq";
@@ -394,7 +394,7 @@ class Resource extends Common
             $map[] = ["status", "eq", 1];
             $rows = Db::name("order")->where($map)->count();
             $pages = page($rows);
-            $res["list"] = Db::name("order")->where("a_id", $this->agent_id)->limit($pages["offset"], $pages["limit"])->select();
+            $res["list"] = Db::name("order")->where($map)->limit($pages["offset"], $pages["limit"])->select();
             $res["pages"] = $pages;
             check_data($res["list"], $res);
         }

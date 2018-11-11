@@ -95,4 +95,23 @@ Route::get("a/cart_l", 'agent/Resource/cartList');
 
 Route::post("a/num", 'agent/Resource/check_sku');
 
+//商户后台
+
+Route::post("m/login", 'merc/User/login');
+
+Route::post("m/logout", "merc/User/logout");
+
+Route::post("m/change_pwd", "merc/User/changePwd");
+
+Route::any("m/cart", 'merc/Goods/addToCart');
+
+Route::any("m/cat", 'merc/Goods/category');
+
+Route::post("m/opr", 'merc/Goods/cartManage');
+
+Route::get("m/cart_l", 'merc/Goods/cartList');
+
+Route::post("m/num", 'merc/Goods/check_sku');
+
+Route::post("m/cf", 'merc/Goods/confirmReceive');
 

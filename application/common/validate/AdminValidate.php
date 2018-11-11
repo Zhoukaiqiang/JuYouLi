@@ -42,7 +42,7 @@ class AdminValidate extends Validate{
         "num" => "require",
         "amount" => "require",
         "ads" => "require",
-        "gid" => "require",
+
 
     ];
 
@@ -77,7 +77,7 @@ class AdminValidate extends Validate{
         "category.require" => "类目必填",
         "category_id.require" => "类目ID必填",
         //添加子商品
-        "gid.require"  => "主商品ID必填",
+        "gid.require"  => "商品ID必填",
         //新增订单
         "t_amount.require" => "订单金额必填",
         "num.require" => "数量必填",
@@ -103,8 +103,9 @@ class AdminValidate extends Validate{
         "addAliasGoods" => ["name", "a_price", "m_price", "fee", "SKU", "goods_type", "category","imgLogo", "gid"],
         //新增商户 mark
         "add_merc"=>["name", "c_contact", "ads"],
-        "make_order"=>["num", "order_money", "order_money", "received_coin", "order_no", "goods"],
+        "make_order"=>["num", "amount", "t_amount", "gid",'id'],
         //add to cart
+        "addToCart" => ["gid"],
     ];
 
 }

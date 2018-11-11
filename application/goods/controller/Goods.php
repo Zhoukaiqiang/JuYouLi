@@ -7,7 +7,7 @@ use app\common\validate\AdminValidate;
 use think\Db;
 use think\Request;
 
-class Goods extends Common
+class Goods
 {
     /**
      * 添加商品
