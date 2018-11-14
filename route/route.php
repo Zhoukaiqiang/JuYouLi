@@ -23,6 +23,8 @@ Route::post("change_pwd", "admin/user/changePwd");
 
 Route::post("upload", "admin/common/upload_img");
 
+Route::get("scale", 'admin/index/getScale');
+
 Route::any("get_agent", "admin/admin/getAgent");
 
 Route::any("get_merc", "admin/admin/getMerc");
@@ -53,6 +55,12 @@ Route::any("order", "goods/goods/orderList");
 Route::get("order_d", "goods/goods/orderDetail");
 
 Route::any("goods", "goods/goods/goodsList");
+
+Route::post("qrcode", 'goods/Goods/makeQrCode');
+
+Route::get("gd", 'goods/Goods/goodsDetail');
+
+Route::post("qr", 'goods/Goods/makeQrCode');
 
 
 Route::post("add_goods", "goods/goods/addGoods");
@@ -94,6 +102,8 @@ Route::post("a/opr", 'agent/Resource/cartManage');
 Route::get("a/cart_l", 'agent/Resource/cartList');
 
 Route::post("a/num", 'agent/Resource/check_sku');
+
+Route::get("a/scale", 'agent/Resource/getScale');
 
 //商户后台
 

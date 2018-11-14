@@ -15,6 +15,7 @@ use app\admin\model\Coin;
 use app\admin\model\Member;
 use app\admin\model\Merchant;
 use think\Db;
+use think\Exception;
 use think\Request;
 
 class Index extends Common
@@ -275,6 +276,17 @@ class Index extends Common
 
 
         }
+    }
+    
+    /**
+     * 显示兑换比例
+     * @param [float] $scale
+     * @throws Exception
+     */
+    public function getScale()
+    {
+        $res = Db::name("setting")->where("id = 1")->field("scale, recharge")->find();
+        check_data($res);
     }
 
     /**

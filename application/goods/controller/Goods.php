@@ -4,6 +4,7 @@ namespace app\goods\controller;
 
 use app\admin\controller\Common;
 use app\common\validate\AdminValidate;
+use Endroid\QrCode\QrCode;
 use think\Db;
 use think\Request;
 
@@ -128,7 +129,7 @@ class Goods
             $str = $request->get("gs");
             $arr = explode(',', $str);
             $where = [
-                'gid' => 0,
+                "gid" => 0,
                 "id" => $arr,
             ];
             $main_id = Db::name("goods")->where($where)->field("id")->select();
@@ -150,11 +151,53 @@ class Goods
                         unset($alias["alias_".$i]);
                     }
                 }
+                if (empty($alias)) {
+                    continue;
+                }
                 $v["alias"] = $alias;
                 $alias = null;
             }
             $res["pages"] = $pages;
             check_data($res["list"], $res);
+        }
+    }
+
+
+    /**
+     * 获取商品和关联商品详情 图片, 价格,数量
+     * @param Request $request
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function goodsDetail(Request $request)
+    {
+        if ($request->isGet()) {
+            $gid = $request->get("gid");
+            $res = Db::name("goods")->where("id", $gid)->find();
+            $alias = Db::name("goods")->where("gid", $gid)->select();
+            $res["alias"] = $alias;
+            check_data($res);
+        }
+    }
+
+    /**
+     * 生成二维码
+     * @param Request $request
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function makeQrCode(Request $request)
+    {
+        if ($request->isPost()) {
+            $gid = $request->post("gid");
+            $url = "http://" . $_SERVER['SERVER_NAME'];
+            $qrCode = new QrCode("$url/goods/index.php?gid=$gid");
+            $imgName = md5($qrCode->getText());
+            $path = "uploads/" . $imgName . ".png";
+            $qrCode->writeFile($path);
+            return_msg(200, "Success", $path);
         }
     }
 

@@ -13,7 +13,7 @@ use think\Controller;
 use think\facade\Session;
 use think\Request;
 
-class Common extends Controller
+class Common extends User
 {
     protected $id;
     protected $token;
@@ -24,10 +24,12 @@ class Common extends Controller
         /** 检查登录 */
         if (Session::has("user")) {
             $this->id = Session::get("user")["id"];
-//            $this->token = md5("JuYouLi_" . md5($this->id . Session::get("user")["name"]));
-//            if ($this->token !== \request()->param("token")) {
-//                return_msg(400, "token不正确！");
-//            }
+
+            $this->token = md5("JuYouLi_" . md5($this->id . Session::get("user")["name"]));
+            if ($this->token !==$this->request->param("token")) {
+                return_msg(400, "token不正确！");
+            }
+            unset($this->request->param()["token"]);
             return true;
         } else {
             return_msg(400, "请登录");

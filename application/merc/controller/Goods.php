@@ -38,27 +38,27 @@ class Goods extends Common
                 $v["fee"] = $v["fee"] * $rate["recharge"];
             }
             $res["pages"] = $pages;
+            $res["coin"] = Db::name("merchant")->where("id", $this->merc)->find()["coin"];
             check_data($res["list"], $res);
         } else {
             /** 加入购物车 */
             $gid = $request->post("gid");
 
-            $ids = explode(",", $gid);
-            check_params("addToCart", $gid);
-            $res = null;
-            foreach ($ids as $i) {
-                $goods = Db::name("goods")->where("id = $i")->find();
-                $data["imgLogo"] = $goods["imgLogo"];
-                $data["size"] = $goods["size"];
-                $data["buy_price"] = $goods["a_price"];
-                $data["sale_price"] = $goods["m_price"];
-                $data["fee"] = $goods["fee"];
-                $data["m_id"] = $this->merc;
-                $data["gid"] = $i;
-                $data["status"] = 0;
-                $data["name"] = $goods["name"];
-                $res = Db::name("hay")->insertGetId($data);
-            }
+//            $ids = explode(",", $gid);
+//            check_params("addToCart", $gid);
+
+            $goods = Db::name("goods")->where("id", $gid)->find();
+            $data["imgLogo"] = $goods["imgLogo"];
+            $data["size"] = $goods["size"];
+            $data["buy_price"] = $goods["a_price"];
+            $data["sale_price"] = $goods["m_price"];
+            $data["fee"] = $goods["fee"];
+            $data["m_id"] = $this->merc;
+            $data["gid"] = $gid;
+            $data["status"] = 0;
+            $data["name"] = $goods["name"];
+            $res = Db::name("hay")->insertGetId($data);
+
 
             check_opera($res);
         }
@@ -103,6 +103,7 @@ class Goods extends Common
         $res["pages"] = $pages;
         check_data($res["list"], $res);
     }
+
     /**
      * 购买记录
      * @throws \think\db\exception\DataNotFoundException
@@ -120,13 +121,13 @@ class Goods extends Common
             if ($ky) {
                 $k_f = "LIKE";
                 $ky = $ky . "%";
-            }else {
+            } else {
                 $k_f = "NOT LIKE";
                 $ky = "-2";
             }
             if ($status) {
                 $s_f = "eq";
-            }else {
+            } else {
                 $s_f = "neq";
                 $status = -2;
             }
@@ -151,6 +152,21 @@ class Goods extends Common
         }
     }
 
+
+    /**
+     * 商品分类
+     * //mark
+     */
+    public function category()
+    {
+        $arr = [
+            ["cat" => "aaa", "id" => "1"],
+            ["cat" => "bbb", "id" => "2"],
+            ["cat" => "ccc", "id" => "3"],
+        ];
+        check_data($arr);
+    }
+
     /**
      * 购物车操作
      * @param Request $request
@@ -172,9 +188,9 @@ class Goods extends Common
             } elseif ($opr == "buy") {
                 /** 改变购物车状态 */
                 $dd = $request->post();
-                check_params('make_order',$dd);
+                check_params('make_order', $dd);
                 $rr = Db::name("merchant")->where("id", $this->merc)->find();
-                if (!$rr["coin"] || $rr["coin"] < $dd["amount"] ) {
+                if (!$rr["coin"] || $rr["coin"] < $dd["amount"]) {
                     return_msg(400, "您当前余额不足，请及时充值");
                 }
 
@@ -220,7 +236,7 @@ class Goods extends Common
         if ($request->post()) {
             $id = $request->post("id");
 
-            $res = Db::name("order")->where("id",$id)->setField("status", 2);
+            $res = Db::name("order")->where("id", $id)->setField("status", 2);
             check_opera($res);
         }
     }

@@ -45,6 +45,23 @@ class Resource extends Common
     }
 
     /**
+     * 兑换申请
+     * @param Request $request
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function applyExchange(Request $request)
+    {
+        if ($request->isPost()) {
+            $am = $request->post("amount");
+            $scale = Db::name("setting")->field("scale")->find()["scale"];
+            $cd = $am * $scale;
+            return_msg(200, "success" , $cd);
+        }
+    }
+
+    /**
      * 商户管理
      * @param Request $request
      * @throws \think\db\exception\DataNotFoundException
@@ -286,7 +303,7 @@ class Resource extends Common
         $arr = [
             ["cat" => "aaa", "id" => "1"],
             ["cat" => "bbb", "id" => "2"],
-            ["cat" => "ccc", "id" => "1"],
+            ["cat" => "ccc", "id" => "3"],
         ];
         check_data($arr);
     }
@@ -301,9 +318,11 @@ class Resource extends Common
     public function addToCart(Request $request)
     {
         if ($request->isGet()) {
-            $rows = Db::name("hay")->where("a_id", $this->agent_id)->count();
+            $where[] = ["a_id", 'eq', $this->agent_id];
+            $where[] = ["status", 'eq', 0];
+            $rows = Db::name("hay")->where($where)->count();
             $pages = page($rows);
-            $res["list"] = Db::name("hay")->where("a_id", $this->agent_id)->limit($pages["offset"], $pages["limit"])->select();
+            $res["list"] = Db::name("hay")->where($where)->limit($pages["offset"], $pages["limit"])->select();
             $rate = Db::name("setting")->field("recharge")->find();
             foreach ($res["list"] as &$v) {
                 $v["fee"] = $v["fee"] * $rate["recharge"];
@@ -369,13 +388,13 @@ class Resource extends Common
             if ($ky) {
                 $k_f = "LIKE";
                 $ky = $ky . "%";
-            }else {
+            } else {
                 $k_f = "NOT LIKE";
                 $ky = "-2";
             }
             if ($status) {
                 $s_f = "eq";
-            }else {
+            } else {
                 $s_f = "neq";
                 $status = -2;
             }
@@ -421,18 +440,19 @@ class Resource extends Common
                 /** 改变购物车状态 */
                 $dd = $request->post();
                 $rr = Db::name("agent")->where("id", $this->agent_id)->find();
-                if (!$rr["coin"] || $rr["coin"] < $dd["amount"] ) {
+                if (!$rr["coin"] || $rr["coin"] < $dd["amount"]) {
                     return_msg(400, "您当前余额不足，请及时充值");
                 }
-                check_params('make_order',$dd);
+                check_params('make_order', $dd);
 
                 $sku = explode(',', $dd["num"]);
                 $ids = explode(',', $dd["id"]);
-                foreach ($ids as $i) {
-                    foreach ($sku as $v) {
-                        $data = ["num" => $v, "status" => 1];
-                        $res = Db::name("hay")->where("id = $i")->update($data);
-                    }
+                foreach($sku as $k => $v) {
+                    $dt[$ids[$k]] = $v;
+                }
+                foreach ($dt as $k => $v) {
+                    $data = ["num" => $v, "status" => 1, "a_id" => $this->agent_id];
+                    $res = Db::name("hay")->where("id", $k)->update($data);
                 }
                 check_opera($res, 0);
 
@@ -446,19 +466,37 @@ class Resource extends Common
                     "order_no" => generate_order_no($this->agent_id),
                     "goods" => $dd["gid"],
                     "ads" => $rr["ads"],
+                    "num" => array_sum($sku),
                     "c_person" => $rr["c_person"],
                     "c_phone" => $rr["c_phone"],
                     "agent_name" => $rr["agent_name"],
                 ];
                 $o_res = Db::name("order")->insertGetId($goods);
-                check_opera($o_res, 0);
-                /** 生成成功 扣除兑换币 */
-                $reduce_coin = Db::name("merchant")->where("id", $this->agent_id)->setDec("coin", $dd["amount"]);
+                /** 存入失败， 设置回滚 */
+                if (!$o_res) {
+                    Db::name("hay")->where("id", "IN", $dd["id"])->setField("status", 0);
+                }else {
+                    /** 生成成功 扣除兑换币 */
+                    $reduce_coin = Db::name("merchant")->where("id", $this->agent_id)->setDec("coin", $dd["amount"]);
+                    check_opera($reduce_coin);
+                }
 
-                check_opera($reduce_coin);
             }
         }
     }
+
+    /**
+     * 显示兑换比例
+     * @param [float] $scale
+     * @throws Exception
+     */
+    public function getScale()
+    {
+        $res = Db::name("setting")->where("id = 1")->field("scale, recharge")->find();
+        check_data($res);
+    }
+
+
     /**
      * 会员管理搜索
      * @param Request $request
