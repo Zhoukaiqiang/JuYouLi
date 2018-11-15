@@ -277,7 +277,7 @@ class Index extends Common
 
         }
     }
-    
+
     /**
      * 显示兑换比例
      * @param [float] $scale
